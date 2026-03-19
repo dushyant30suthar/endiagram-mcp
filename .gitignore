@@ -1,1 +1,3 @@
-node_modules/\ndist/
+node_modules/
+dist/
+.mcpregistry_*
