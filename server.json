@@ -3,15 +3,15 @@
   "name": "io.github.dushyant30suthar/en-diagram",
   "description": "12 deterministic graph tools for structural analysis. No AI inside.",
   "repository": {
-    "url": "https://github.com/dushyant30suthar/endiagram-mcp",
+    "url": "https://github.com/dushyant30suthar/endiagram",
     "source": "github"
   },
-  "version": "0.1.2",
+  "version": "0.1.4",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@endiagram/mcp",
-      "version": "0.1.2",
+      "version": "0.1.4",
       "transport": {
         "type": "stdio"
       }
