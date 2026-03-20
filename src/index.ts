@@ -71,31 +71,6 @@ server.tool(
   }
 );
 
-// --- render ---
-
-server.tool(
-  "render",
-  "Render an EN dependency graph as a publication-quality SVG image. Nodes are colored by structural role (source, sink, hub, etc.) and grouped by auto-detected subsystem. Use when the user wants to SEE the structure -- the visual often reveals patterns (clusters, isolated subgraphs, fan-out imbalance) that text output alone misses.",
-  {
-    source: z.string().describe("EN source code describing the system"),
-    theme: z
-      .enum(["dark", "light"])
-      .optional()
-      .describe("Color theme for the rendered image"),
-    quality: z
-      .enum(["small", "mid", "max"])
-      .optional()
-      .describe("Output quality / resolution"),
-  },
-  async ({ source, theme, quality }) => {
-    const result = await callApi("render", { source, theme, quality });
-    return {
-      content: [{ type: "text" as const, text: result.text }],
-      isError: result.isError,
-    };
-  }
-);
-
 // --- detail ---
 
 server.tool(
@@ -106,6 +81,23 @@ server.tool(
   },
   async ({ source }) => {
     const result = await callApi("detail", { source });
+    return {
+      content: [{ type: "text" as const, text: result.text }],
+      isError: result.isError,
+    };
+  }
+);
+
+// --- categorize ---
+
+server.tool(
+  "categorize",
+  "Auto-organize a flat list into named groups. You give it ungrouped actions with inputs and outputs -- the tool discovers subsystem boundaries from the dependency structure and names them. 25 nodes become 5-6 named subsystems. You don't define the groups. The structure does. When the discovered boundaries differ from your module structure, that difference is a finding. Use after analyze_system to see how the system organizes itself. Then feed subsystem names into extract for fractal zoom.",
+  {
+    source: z.string().describe("EN source code describing the system"),
+  },
+  async ({ source }) => {
+    const result = await callApi("categorize", { source });
     return {
       content: [{ type: "text" as const, text: result.text }],
       isError: result.isError,
@@ -178,6 +170,24 @@ server.tool(
   }
 );
 
+// --- between ---
+
+server.tool(
+  "between",
+  "Quantify coupling. Computes betweenness centrality for a node: what fraction of all shortest paths in the system flow through it. Returns normalized score [0-1], absolute shortest-paths-through count, and total paths. A score of 0.25 means one quarter of all communication in the system passes through this node -- it's a coupling hotspot. Use on nodes flagged as HUB or FORK by analyze_system to get a precise number. Compare centrality scores across nodes to find the true bottleneck vs nodes that just look important.",
+  {
+    source: z.string().describe("EN source code describing the system"),
+    node: z.string().describe("Node to compute betweenness centrality for"),
+  },
+  async ({ source, node }) => {
+    const result = await callApi("between", { source, node });
+    return {
+      content: [{ type: "text" as const, text: result.text }],
+      isError: result.isError,
+    };
+  }
+);
+
 // --- extract ---
 
 server.tool(
@@ -232,41 +242,6 @@ server.tool(
   }
 );
 
-// --- between ---
-
-server.tool(
-  "between",
-  "Quantify coupling. Computes betweenness centrality for a node: what fraction of all shortest paths in the system flow through it. Returns normalized score [0-1], absolute shortest-paths-through count, and total paths. A score of 0.25 means one quarter of all communication in the system passes through this node -- it's a coupling hotspot. Use on nodes flagged as HUB or FORK by analyze_system to get a precise number. Compare centrality scores across nodes to find the true bottleneck vs nodes that just look important.",
-  {
-    source: z.string().describe("EN source code describing the system"),
-    node: z.string().describe("Node to compute betweenness centrality for"),
-  },
-  async ({ source, node }) => {
-    const result = await callApi("between", { source, node });
-    return {
-      content: [{ type: "text" as const, text: result.text }],
-      isError: result.isError,
-    };
-  }
-);
-
-// --- categorize ---
-
-server.tool(
-  "categorize",
-  "Auto-organize a flat list into named groups. You give it ungrouped actions with inputs and outputs -- the tool discovers subsystem boundaries from the dependency structure and names them. 25 nodes become 5-6 named subsystems. You don't define the groups. The structure does. When the discovered boundaries differ from your module structure, that difference is a finding. Use after analyze_system to see how the system organizes itself. Then feed subsystem names into extract for fractal zoom.",
-  {
-    source: z.string().describe("EN source code describing the system"),
-  },
-  async ({ source }) => {
-    const result = await callApi("categorize", { source });
-    return {
-      content: [{ type: "text" as const, text: result.text }],
-      isError: result.isError,
-    };
-  }
-);
-
 // --- compose ---
 
 server.tool(
@@ -283,6 +258,31 @@ server.tool(
   },
   async ({ source_a, source_b, links }) => {
     const result = await callApi("compose", { source_a, source_b, links });
+    return {
+      content: [{ type: "text" as const, text: result.text }],
+      isError: result.isError,
+    };
+  }
+);
+
+// --- render (last — only use when user explicitly asks to visualize) ---
+
+server.tool(
+  "render",
+  "Render an EN dependency graph as a publication-quality SVG image. Only call this when the user explicitly asks to visualize or render. Nodes are colored by structural role (source, sink, hub, etc.) and grouped by auto-detected subsystem. The visual reveals patterns (clusters, isolated subgraphs, fan-out imbalance) that text output alone misses.",
+  {
+    source: z.string().describe("EN source code describing the system"),
+    theme: z
+      .enum(["dark", "light"])
+      .optional()
+      .describe("Color theme for the rendered image"),
+    quality: z
+      .enum(["small", "mid", "max"])
+      .optional()
+      .describe("Output quality / resolution"),
+  },
+  async ({ source, theme, quality }) => {
+    const result = await callApi("render", { source, theme, quality });
     return {
       content: [{ type: "text" as const, text: result.text }],
       isError: result.isError,
