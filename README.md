@@ -4,6 +4,8 @@ MCP server for [EN Diagram](https://endiagram.com) — structural analysis power
 
 Write your system in plain text. Get back structural facts: bottlenecks, blast radius, flow landmarks, concurrency groups, and more. No AI inside the computation — every result is deterministic.
 
+[![endiagram MCP server](https://glama.ai/mcp/servers/dushyant30suthar/endiagram-mcp/badges/card.svg)](https://glama.ai/mcp/servers/dushyant30suthar/endiagram-mcp)
+
 ## Installation
 
 Run directly:
