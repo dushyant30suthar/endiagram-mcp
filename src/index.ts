@@ -41,7 +41,7 @@ const PLAIN_LANG =
   " When presenting findings to the user, use plain everyday language. Never use jargon like 'betweenness centrality', 'min-cut', 'bridge node', 'dominator tree', 'vertex-disjoint paths', or 'topology classification'. Instead say 'bottleneck', 'single point of failure', 'no backup path', 'what controls what'. The raw data helps your analysis -- give the user clear, simple insights.";
 
 const server = new McpServer({
-  name: "en-diagram",
+  name: "endiagram-mcp",
   version: "0.1.0",
 });
 
