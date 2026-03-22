@@ -18,7 +18,13 @@ Or install globally:
 npm install -g @endiagram/mcp
 ```
 
-## Configuration
+## Connect
+
+### Claude Code
+
+```bash
+claude mcp add endiagram npx @endiagram/mcp
+```
 
 ### Claude Desktop
 
@@ -27,7 +33,7 @@ Add to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "en-diagram": {
+    "endiagram": {
       "command": "npx",
       "args": ["@endiagram/mcp"]
     }
@@ -35,10 +41,33 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-### Claude Code
+### Cursor
+
+Add to `.cursor/mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "endiagram": {
+      "command": "npx",
+      "args": ["@endiagram/mcp"]
+    }
+  }
+}
+```
+
+### HTTP (zero install)
+
+Any MCP client that supports HTTP transport:
+
+```
+https://api.endiagram.com/mcp
+```
+
+### Smithery
 
 ```bash
-claude mcp add en-diagram npx @endiagram/mcp
+smithery mcp add dushyant30suthar/endiagram
 ```
 
 ## Environment Variables
