@@ -6,15 +6,21 @@
     "url": "https://github.com/dushyant30suthar/endiagram",
     "source": "github"
   },
-  "version": "0.1.4",
+  "version": "0.1.8",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@endiagram/mcp",
-      "version": "0.1.4",
+      "version": "0.1.8",
       "transport": {
         "type": "stdio"
       }
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.endiagram.com/mcp"
     }
   ]
 }
