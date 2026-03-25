@@ -1,8 +1,6 @@
 # @endiagram/mcp
 
-MCP server for [EN Diagram](https://endiagram.com) — structural analysis powered by deterministic graph algorithms.
-
-Write your system in plain text. Get back structural facts: bottlenecks, blast radius, flow landmarks, concurrency groups, and more. No AI inside the computation — every result is deterministic.
+MCP server for [EN Diagram](https://endiagram.com) — deterministic structural analysis powered by graph theory. Every result is backed by a named mathematical theorem. No AI inside the computation.
 
 ## Installation
 
@@ -80,25 +78,34 @@ smithery mcp add dushyant30suthar/endiagram
 
 | Tool | Description |
 |------|-------------|
-| `analyze_system` | Structural signal — computes topology, roles, antipatterns from EN source |
-| `render` | Render a dependency graph as publication-quality SVG |
-| `detail` | Deep structural analysis — concurrency, flow landmarks, resilience, dominator tree, min-cuts |
-| `distance` | Shortest path between two nodes with subsystem crossing annotations |
-| `diff` | Structural diff between two systems — topology, role, and subsystem changes |
-| `trace` | Follow directed flow from node A to node B with role and subsystem annotations |
-| `extract` | Extract a named subsystem as standalone EN source code |
-| `impact` | Blast radius — remove a node and see what disconnects |
-| `evolve` | Dry-run architectural changes — apply a patch and see the structural delta |
-| `between` | Betweenness centrality — what fraction of all shortest paths flow through a node |
+| `analyze` | System overview: shape, node roles, single points of failure, failure threshold, flow hotspots |
+| `detail` | Concurrency, critical path, flow landmarks, resilience, dependency chains, dominator tree |
 | `categorize` | Auto-discover subsystem boundaries from dependency structure |
-| `compose` | Merge two EN graphs into one with entity linking |
+| `distance` | Structural distance between two nodes with the path between them |
+| `diff` | Compare two systems — what changed structurally |
+| `trace` | Follow directed flow from A to B, optional defense node coverage check |
+| `between` | How much of the system flows through a specific node |
+| `extract` | Extract a subsystem as standalone EN source |
+| `impact` | What changes if a node is removed, includes propagation |
+| `evolve` | Dry-run a structural change before making it |
+| `compose` | Merge two systems into one by linking shared entities |
+| `conserve` | Structural invariants, deadlock analysis, complexity, resilience |
+| `render` | SVG diagram |
 
 ## EN Syntax
 
+One statement per line:
+
 ```
-Customer do: place order needs: menu yields: order
-Kitchen do: prepare food needs: order yields: meal
-Waiter do: deliver needs: meal yields: served customer
+actor do: action needs: input1, input2 yields: output1, output2
+```
+
+Shared names between yields and needs create connections automatically:
+
+```
+customer do: place order needs: menu yields: order
+kitchen do: prepare food needs: order yields: meal
+waiter do: deliver needs: meal yields: served customer
 ```
 
 Learn more at [endiagram.com](https://endiagram.com).
@@ -106,4 +113,3 @@ Learn more at [endiagram.com](https://endiagram.com).
 ## License
 
 MIT
-

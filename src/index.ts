@@ -3,13 +3,15 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { join } from "node:path";
 
 const EN_API_URL = process.env.EN_API_URL ?? "https://api.endiagram.com";
 
 async function callApi(
   toolName: string,
   args: Record<string, unknown>
-): Promise<{ text: string; isError: boolean }> {
+): Promise<{ text: string; isError: boolean; svg?: string }> {
   try {
     const response = await fetch(`${EN_API_URL}/api/tools/${toolName}`, {
       method: "POST",
@@ -17,16 +19,25 @@ async function callApi(
       body: JSON.stringify(args),
     });
 
-    const text = await response.text();
+    const body = await response.text();
 
     if (!response.ok) {
       return {
-        text: `API error (${response.status}): ${text}`,
+        text: `API error (${response.status}): ${body}`,
         isError: true,
       };
     }
 
-    return { text, isError: false };
+    try {
+      const parsed = JSON.parse(body);
+      return {
+        text: parsed.text ?? body,
+        isError: parsed.isError ?? false,
+        svg: parsed.svg ?? undefined,
+      };
+    } catch {
+      return { text: body, isError: false };
+    }
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown error";
@@ -46,7 +57,9 @@ Shared names between yields and needs create connections automatically. Multi-wo
 
 The engine computes structural truth from the description — the tool outputs are raw mathematical findings. Translate them into clear, practical insights relevant to what the user is trying to achieve.
 
-How to use these tools effectively: model the system first, then explore. The first tool call reveals the structure — but the real insights come from following up. A node labeled HUB that should be simple? Dig into it with between or impact. A surprising subsystem boundary? Extract it and analyze deeper. An unexpected dependency chain? Trace it. A proposed change? Evolve it and diff. The tools are designed to chain — each finding opens a question that another tool can answer. Don't stop at one call. Explore, tinker, compare, and let the math surface what no one expected.`;
+How to use these tools effectively: model the system first, then explore. The first tool call reveals the structure — but the real insights come from following up. A node labeled HUB that should be simple? Dig into it with between or impact. A surprising subsystem boundary? Extract it and analyze deeper. An unexpected dependency chain? Trace it. A proposed change? Evolve it and diff. The tools are designed to chain — each finding opens a question that another tool can answer. Don't stop at one call. Explore, tinker, compare, and let the math surface what no one expected.
+
+Go deep, not wide. When a finding catches your attention — a surprising hub, an unexpected bottleneck, a structural anomaly — lock onto it. Use one tool to surface it, then chain the next tool to explain it, then the next to stress-test it. Keep narrowing until you reach the root. One thread, followed to the end, beats ten shallow observations. Only call render when the user explicitly asks to visualize.`;
 
 const server = new McpServer({
   name: "endiagram",
@@ -297,7 +310,7 @@ server.tool(
 
 server.tool(
   "render",
-  "SVG diagram. Only when user asks to visualize.",
+  "SVG diagram. Only call when user explicitly asks to visualize. Saves SVG to a local file — no SVG content enters the conversation.",
   {
     source: z.string().describe("EN source code describing the system"),
     theme: z
@@ -311,9 +324,21 @@ server.tool(
   },
   async ({ source, theme, quality }) => {
     const result = await callApi("render", { source, theme, quality });
+    if (result.isError || !result.svg) {
+      return {
+        content: [{ type: "text" as const, text: result.text }],
+        isError: result.isError,
+      };
+    }
+
+    const outDir = join(process.cwd(), ".endiagram");
+    if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+    const filePath = join(outDir, `en-${Date.now()}.svg`);
+    writeFileSync(filePath, result.svg);
+
     return {
-      content: [{ type: "text" as const, text: result.text }],
-      isError: result.isError,
+      content: [{ type: "text" as const, text: `SVG saved: ${filePath}` }],
+      isError: false,
     };
   }
 );
