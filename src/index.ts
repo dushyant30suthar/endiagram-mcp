@@ -11,30 +11,42 @@ const EN_API_URL = process.env.EN_API_URL ?? "https://api.endiagram.com";
 async function callApi(
   toolName: string,
   args: Record<string, unknown>
-): Promise<{ text: string; isError: boolean; svg?: string }> {
+): Promise<{ text: string; isError: boolean; svg?: string; data?: unknown }> {
   try {
-    const response = await fetch(`${EN_API_URL}/api/tools/${toolName}`, {
+    const response = await fetch(`${EN_API_URL}/mcp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(args),
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: Date.now(),
+        method: "tools/call",
+        params: {
+          name: toolName,
+          arguments: args,
+        },
+      }),
     });
 
     const body = await response.text();
-
     if (!response.ok) {
-      return {
-        text: `API error (${response.status}): ${body}`,
-        isError: true,
-      };
+      return { text: `API error (${response.status}): ${body}`, isError: true };
     }
 
     try {
-      const parsed = JSON.parse(body);
-      return {
-        text: parsed.text ?? body,
-        isError: parsed.isError ?? false,
-        svg: parsed.svg ?? undefined,
-      };
+      const rpcResponse = JSON.parse(body);
+      if (rpcResponse.error) {
+        return { text: rpcResponse.error.message, isError: true };
+      }
+      const result = rpcResponse.result;
+      const content = result?.content?.[0];
+      const text = content?.text ?? body;
+      const isError = result?.isError ?? false;
+      // Check for SVG in second content block (render tool)
+      const svgContent = result?.content?.[1];
+      const svg = svgContent?.text?.startsWith("<svg")
+        ? svgContent.text
+        : undefined;
+      return { text, isError, svg, data: undefined };
     } catch {
       return { text: body, isError: false };
     }
@@ -83,7 +95,7 @@ server.tool(
       .describe("Set to 'true' to detect structural antipatterns"),
   },
   async ({ source, invariants, detect_antipatterns }) => {
-    const result = await callApi("analyze_system", {
+    const result = await callApi("analyze", {
       source,
       invariants,
       detect_antipatterns,
