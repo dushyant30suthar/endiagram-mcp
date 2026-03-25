@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.dushyant30suthar/endiagram-mcp",
-  "description": "13 deterministic graph tools for structural analysis. No AI inside — every result backed by named theorems.",
+  "description": "13 deterministic graph tools for structural analysis. No AI inside the computation.",
   "repository": {
     "url": "https://github.com/dushyant30suthar/endiagram-mcp",
     "source": "github"
   },
-  "version": "0.2.7",
+  "version": "0.2.8",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@endiagram/mcp",
-      "version": "0.2.7",
+      "version": "0.2.8",
       "transport": {
         "type": "stdio"
       }
