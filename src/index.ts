@@ -68,10 +68,10 @@ async function callApi(
 
 const EN_INSTRUCTIONS: string = toolsConfig.instructions;
 
-const server = new McpServer({
-  name: "endiagram",
-  version: "0.2.0",
-});
+const server = new McpServer(
+  { name: "endiagram", version: "0.2.0" },
+  { instructions: EN_INSTRUCTIONS },
+);
 
 interface ToolParam {
   name: string;
