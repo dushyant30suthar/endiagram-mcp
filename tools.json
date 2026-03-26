@@ -1,116 +1,59 @@
 {
-  "instructions": "EN Diagram is a deterministic structural analysis engine. No AI inside.\n\nTo describe a system, write one statement per line:\n  actor do: action needs: input1, input2 yields: output1, output2 at: context\n\nShared names between yields and needs create connections automatically. Multi-word names work fine. Use commas to separate multiple inputs or outputs. at: scopes the action to a context (service, team, region, domain, layer — whatever boundary fits the system).\n\nThe engine computes structural truth from the description — the tool outputs are raw mathematical findings. Translate them into the language of the system being analyzed. If analyzing a payment flow, say 'the payment gateway is structurally isolated' not 'node X has high centrality'. Speak in the user's domain, not in graph theory.\n\nEvery tool output contains node names, values, and structural properties that can be fed directly into other tools. Read the output. Find the surprising node, the unexpected value, the structural anomaly. Then pick the tool that investigates THAT specific finding. One tool surfaces a fact. The next tool explains it. The next stress-tests it. Keep narrowing until you reach the root cause. One thread followed to completion beats ten shallow observations.\n\nDo not stop at one tool call. Do not summarize after one result. The first call reveals the structure — the real insight comes from the second, third, fourth call that digs into what the first one found.\n\nSpeak in the user's domain, not in graph theory. Only call render when the user explicitly asks to visualize.",
+  "instructions": "EN Diagram is a structural verification engine for concurrent systems. No AI inside.\n\nTo describe a system, write one statement per line:\n  actor do: action needs: input1, input2 yields: output1, output2 at: context\n\nShared names between yields and needs create connections automatically. Multi-word names work fine. Use commas to separate multiple inputs or outputs. at: scopes the action to a context (service, team, region, domain, layer — whatever boundary fits the system).\n\nSix tools answer six questions from concurrency theory. Each answer includes who (actors) and where (locations) alongside the structural findings.\n\n1. structure — what is this system?\n2. invariant — what's always true?\n3. live — can it deadlock? can entities overflow?\n4. reachable — can X reach Y?\n5. equivalent — are two systems the same?\n6. compose — how do parts combine?\n\nEvery tool output contains node names, values, and structural properties that can be fed directly into other tools. Read the output. Find the surprising node, the unexpected value, the structural anomaly. Then pick the tool that investigates THAT specific finding.\n\nDo not stop at one tool call. The first call reveals the structure — the real insight comes from the second, third, fourth call that digs into what the first one found.\n\nSpeak in the user's domain, not in graph theory. Only call render when the user explicitly asks to visualize.",
   "tools": [
     {
-      "name": "analyze",
-      "description": "System overview. Output: shape is the proven topology — known shapes are Pipeline, Tree, Star, Fork-Join, Mesh, State-Machine, Disconnected; Unknown means the system is too complex for any named category. bridgeNodes are nodes whose removal disconnects the graph. steadyStateShare is where flow naturally accumulates — share of time spent at each node if you follow connections randomly. unmatchedEntities are entities that cannot be simultaneously served by unique actions — a high count relative to entityCount means the system has more demand than capacity. structuralFindings are observed structural patterns (set detect_antipatterns to true). For parallelism and critical path use detail. For resilience threshold and entropy use conserve.",
+      "name": "structure",
+      "description": "What is this system? Complete structural overview: shape (topology), stages with roles, bridge nodes, cycles, parallelism, critical path, dominator tree, min-cuts, subsystems, interface nodes. Includes actors (who does what, workload entropy) and locations (where work happens, boundary crossings). Optional: pass node for per-node centrality, detect_findings for structural pattern detection.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true},
-        {"name": "invariants", "type": "string", "description": "Structural rules to check, one per line", "required": false},
+        {"name": "node", "type": "string", "description": "Node name for centrality query", "required": false},
         {"name": "detect_findings", "type": "string", "description": "Set to 'true' to detect structural findings", "required": false}
       ]
     },
     {
-      "name": "detail",
-      "description": "Deep structural metrics. Output: maxParallelism is the maximum number of independent actions that can execute simultaneously. criticalPathLength is the longest dependency chain. landmarks are flow points where the graph diverges or converges, with stage names. dominator shows which nodes control downstream flow — every path from root to a dominated node must pass through the dominator. minCuts are minimum vertex cuts across source-sink pairs (cutSize = nodes to remove to disconnect that pair).",
+      "name": "invariant",
+      "description": "What's always true? conservationLaws are weighted entity sums constant across all executions. sustainableCycles are action sequences that return the system to its starting state (T-invariants). depletableSets are entity groups where simultaneous depletion is irreversible. behavioral.deficiency 0 means structure fully determines dynamics. behavioral.isReversible and behavioral.hasUniqueEquilibrium describe convergence properties.",
+      "parameters": [
+        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true},
+        {"name": "rules", "type": "string", "description": "Structural rules to check, one per line", "required": false}
+      ]
+    },
+    {
+      "name": "live",
+      "description": "Can it deadlock? Can entities overflow? isStructurallyLive means every siphon contains a trap — no structural deadlock possible. uncoveredSiphons are entity groups that can drain permanently, with the actors and locations affected. isStructurallyBounded means no entity can accumulate without limit. unboundedCycles are action sequences that could cause overflow.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true}
       ]
     },
     {
-      "name": "categorize",
-      "description": "Auto-discover subsystem boundaries from dependency structure. Output: interfaceNodes have subsystemOverlap 0-1 measuring how much a node spans multiple subsystems (0 = fully within one subsystem, 1 = equally shared across all).",
-      "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true}
-      ]
-    },
-    {
-      "name": "distance",
-      "description": "Shortest path between two nodes. Output: dominators are nodes on the path where every alternative route must also pass through. pathRedundancy measures how many alternative paths exist between the two nodes — lower means more redundancy (null if nodes are in different components). bridgeEdgesOnPath counts edges whose removal would disconnect the graph.",
-      "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code", "required": true},
-        {"name": "from", "type": "string", "description": "Starting node name", "required": true},
-        {"name": "to", "type": "string", "description": "Target node name", "required": true}
-      ]
-    },
-    {
-      "name": "diff",
-      "description": "Compare two systems structurally. Output shows nodes, entities, roles, and subsystems that differ. editDistance is the total graph edit cost (sum of node insertions + deletions + edge insertions + deletions). spectralEquivalence compares the mathematical structure independent of naming — isCospectral true means two systems have identical structural properties despite different names; spectrumDistance 0.0 means identical topology.",
-      "parameters": [
-        {"name": "source_a", "type": "string", "description": "EN source code for the first system", "required": true},
-        {"name": "source_b", "type": "string", "description": "EN source code for the second system", "required": true}
-      ]
-    },
-    {
-      "name": "trace",
-      "description": "Follow directed data flow from A to B. Tries directed path first (needs to action to yields); falls back to undirected if no directed path exists (usesReverseEdges=true). Optional: defense_nodes checks if at least one guard node sits on every source-to-sink path.",
+      "name": "reachable",
+      "description": "Can X reach Y? Follows directed data flow first; falls back to undirected. Path shows each step with actor and location. locationCrossings counts boundary transitions. defense_nodes checks if guards cover all paths. coverage.fullCoverage false means unguarded routes exist.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code", "required": true},
         {"name": "from", "type": "string", "description": "Starting node name", "required": true},
         {"name": "to", "type": "string", "description": "Target node name", "required": true},
-        {"name": "defense_nodes", "type": "string", "description": "Comma-separated list of defense nodes to check coverage", "required": false}
+        {"name": "defense_nodes", "type": "string", "description": "Comma-separated guard nodes to check coverage", "required": false}
       ]
     },
     {
-      "name": "between",
-      "description": "How much of the system's flow passes through one node. Output: centrality is 0-1 normalized — fraction of all shortest paths in the graph that cross this node. Values above 0.3 indicate a structural coupling point; above 0.5 is a major hub. pathsThrough is the absolute count, totalPaths is the denominator.",
+      "name": "equivalent",
+      "description": "Are two systems the same? Compare mode (source_a + source_b): shows structural differences, edit distance, and spectral equivalence — isCospectral true means identical structure despite different names. Evolve mode (source + patch): dry-run a change, shows diff plus new/lost bridge nodes. Prefix action name with - in patch to remove it.",
       "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code", "required": true},
-        {"name": "node", "type": "string", "description": "Node name", "required": true}
-      ]
-    },
-    {
-      "name": "extract",
-      "description": "Extract a subsystem as standalone EN source. boundaryInputs are entities consumed but not produced within the subsystem. boundaryOutputs are entities produced but not consumed within. Feed the extracted EN back into other tools for deeper analysis.",
-      "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code", "required": true},
-        {"name": "subsystem", "type": "string", "description": "Name of the subsystem to extract", "required": true}
-      ]
-    },
-    {
-      "name": "impact",
-      "description": "Remove a node and measure structural effect. Output: disconnectedNodes are actions that lose their sole input source. propagation shows how disruption spreads through the graph — higher diffusion means more structural proximity to the removed node.",
-      "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code", "required": true},
-        {"name": "node", "type": "string", "description": "Node to remove", "required": true}
-      ]
-    },
-    {
-      "name": "evolve",
-      "description": "Dry-run a structural change. Patch adds new actions; prefix action name with - to remove. Output includes the full diff plus newBridgeNodes and lostBridgeNodes showing how bridge structure changed.",
-      "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code for the current system", "required": true},
-        {"name": "patch", "type": "string", "description": "EN source code patch to apply", "required": true}
+        {"name": "source_a", "type": "string", "description": "EN source code for the first system", "required": false},
+        {"name": "source_b", "type": "string", "description": "EN source code for the second system", "required": false},
+        {"name": "source", "type": "string", "description": "EN source code for evolve mode", "required": false},
+        {"name": "patch", "type": "string", "description": "EN patch for evolve mode", "required": false}
       ]
     },
     {
       "name": "compose",
-      "description": "Merge two systems into one by linking shared entities. Use links to specify which entities from system A map to entities in system B. Output enSource is the merged EN ready for other tools.",
+      "description": "How do parts combine? Merge mode (source_a + source_b + links): merge two systems by linking shared entities. Extract mode (source + subsystem): extract a subsystem as standalone EN with boundary inputs/outputs, actors, and locations.",
       "parameters": [
-        {"name": "source_a", "type": "string", "description": "EN source code for the first system", "required": true},
-        {"name": "source_b", "type": "string", "description": "EN source code for the second system", "required": true},
-        {"name": "links", "type": "string", "description": "Entity links e.g. 'a.node1=b.node2, a.node3=b.node4'", "required": true}
-      ]
-    },
-    {
-      "name": "conserve",
-      "description": "Structural invariants, deadlock analysis, complexity, and resilience. Output: invariants are weighted entity sums that stay constant across all executions — positive coefficient means produced, negative means consumed in that ratio. depletableSets are entity groups where simultaneous depletion is irreversible. entropy is normalized structural disorder 0-1. nodeRemovalThreshold is the fraction of random node removals before fragmentation. behavioral.deficiency 0 means structure fully determines execution dynamics. behavioral.isReversible means every reachable state can return to any prior state. behavioral.hasUniqueEquilibrium means convergence to one steady state regardless of initial conditions.",
-      "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true}
-      ]
-    },
-    {
-      "name": "responsibility",
-      "description": "Who does what. Output: actors lists each actor with their actionCount and the entities their actions touch. coAction lists actor pairs sharing actions (from the actor co-action matrix). workloadEntropy is 0-1 normalized — 0 means all work on one actor, 1 means perfectly even distribution.",
-      "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true}
-      ]
-    },
-    {
-      "name": "locality",
-      "description": "Where work happens. Output: locations lists each location with actionCount and entities handled there. coLocation lists location pairs sharing actions. boundaryCrossings counts entity flows where the producing action and consuming action are at different locations. localityEntropy is 0-1 normalized — 0 means all actions at one location, 1 means perfectly distributed.",
-      "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true}
+        {"name": "source_a", "type": "string", "description": "EN source code for the first system", "required": false},
+        {"name": "source_b", "type": "string", "description": "EN source code for the second system", "required": false},
+        {"name": "links", "type": "string", "description": "Entity links e.g. 'a.node1=b.node2'", "required": false},
+        {"name": "source", "type": "string", "description": "EN source code for extract mode", "required": false},
+        {"name": "subsystem", "type": "string", "description": "Subsystem name for extract mode", "required": false}
       ]
     },
     {
@@ -124,4 +67,3 @@
     }
   ]
 }
-
