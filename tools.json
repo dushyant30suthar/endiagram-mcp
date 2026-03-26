@@ -100,6 +100,20 @@
       ]
     },
     {
+      "name": "responsibility",
+      "description": "Who does what. Output: actors lists each actor with their actionCount and the entities their actions touch. coAction lists actor pairs sharing actions (from the actor co-action matrix). workloadEntropy is 0-1 normalized — 0 means all work on one actor, 1 means perfectly even distribution.",
+      "parameters": [
+        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true}
+      ]
+    },
+    {
+      "name": "locality",
+      "description": "Where work happens. Output: locations lists each location with actionCount and entities handled there. coLocation lists location pairs sharing actions. boundaryCrossings counts entity flows where the producing action and consuming action are at different locations. localityEntropy is 0-1 normalized — 0 means all actions at one location, 1 means perfectly distributed.",
+      "parameters": [
+        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true}
+      ]
+    },
+    {
       "name": "render",
       "description": "SVG diagram. Only call when user explicitly asks to visualize.",
       "parameters": [
