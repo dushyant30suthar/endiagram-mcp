@@ -3,7 +3,7 @@
   "tools": [
     {
       "name": "analyze",
-      "description": "System overview. Output: shape is the proven topology — known shapes are Pipeline, Tree, Star, Fork-Join, Mesh, State-Machine, Disconnected; Unknown means the system is too complex for any named category. bridgeNodes are nodes whose removal disconnects the graph. nodeRemovalThreshold is the fraction of random node removals before the system fragments. steadyStateShare is where flow naturally accumulates — share of time spent at each node if you follow connections randomly. unmatchedEntities are entities that cannot be simultaneously served by unique actions — a high count relative to entityCount means the system has more demand than capacity. structuralFindings are observed structural patterns (set detect_antipatterns to true).",
+      "description": "System overview. Output: shape is the proven topology — known shapes are Pipeline, Tree, Star, Fork-Join, Mesh, State-Machine, Disconnected; Unknown means the system is too complex for any named category. bridgeNodes are nodes whose removal disconnects the graph. steadyStateShare is where flow naturally accumulates — share of time spent at each node if you follow connections randomly. unmatchedEntities are entities that cannot be simultaneously served by unique actions — a high count relative to entityCount means the system has more demand than capacity. structuralFindings are observed structural patterns (set detect_antipatterns to true). For parallelism and critical path use detail. For resilience threshold and entropy use conserve.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true},
         {"name": "invariants", "type": "string", "description": "Structural rules to check, one per line", "required": false},
@@ -12,7 +12,7 @@
     },
     {
       "name": "detail",
-      "description": "Deep structural metrics. Output: landmarks are flow points where the graph diverges or converges, with stage names. entropy is normalized structural disorder (0-1, higher = more complex, irregular structure). nodeRemovalThreshold is the fraction of random node removals before the system fragments. dominator shows which nodes control downstream flow — every path from root to a dominated node must pass through the dominator. minCuts are minimum vertex cuts across source-sink pairs (cutSize = nodes to remove to disconnect that pair).",
+      "description": "Deep structural metrics. Output: maxParallelism is the maximum number of independent actions that can execute simultaneously. criticalPathLength is the longest dependency chain. landmarks are flow points where the graph diverges or converges, with stage names. dominator shows which nodes control downstream flow — every path from root to a dominated node must pass through the dominator. minCuts are minimum vertex cuts across source-sink pairs (cutSize = nodes to remove to disconnect that pair).",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true}
       ]
@@ -35,7 +35,7 @@
     },
     {
       "name": "diff",
-      "description": "Compare two systems structurally. Output shows nodes, entities, roles, and subsystems that differ. editDistance is the total graph edit cost (sum of node insertions + deletions + edge insertions + deletions).",
+      "description": "Compare two systems structurally. Output shows nodes, entities, roles, and subsystems that differ. editDistance is the total graph edit cost (sum of node insertions + deletions + edge insertions + deletions). spectralEquivalence compares the mathematical structure independent of naming — isCospectral true means two systems have identical structural properties despite different names; spectrumDistance 0.0 means identical topology.",
       "parameters": [
         {"name": "source_a", "type": "string", "description": "EN source code for the first system", "required": true},
         {"name": "source_b", "type": "string", "description": "EN source code for the second system", "required": true}
