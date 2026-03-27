@@ -109,9 +109,17 @@ for (const tool of toolsConfig.tools as ToolDef[]) {
           };
         }
 
-        const outDir = join(process.cwd(), ".endiagram");
-        if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
-        const filePath = join(outDir, `en-${Date.now()}.svg`);
+        const outputPath = args.output;
+        let filePath: string;
+        if (outputPath) {
+          const dir = dirname(outputPath);
+          if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+          filePath = outputPath;
+        } else {
+          const outDir = join(process.cwd(), ".endiagram");
+          if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
+          filePath = join(outDir, `en-${Date.now()}.svg`);
+        }
         writeFileSync(filePath, result.svg);
 
         return {
