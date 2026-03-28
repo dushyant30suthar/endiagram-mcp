@@ -64,6 +64,8 @@
         {"name": "theme", "type": "string", "description": "Color theme: dark or light", "required": false},
         {"name": "quality", "type": "string", "description": "Output quality: small, mid, or max", "required": false},
         {"name": "view", "type": "string", "description": "View mode: flow (default), actors (swimlane by actor), locations (grouped by context), summary (one node per subsystem)", "required": false},
+        {"name": "show_regions", "type": "string", "description": "Show structural regions like fork, pipeline, join. Default true", "required": false},
+        {"name": "show_locations", "type": "string", "description": "Show location zones from at: clauses. Default true", "required": false},
         {"name": "output", "type": "string", "description": "File path to save the SVG", "required": false}
       ]
     }

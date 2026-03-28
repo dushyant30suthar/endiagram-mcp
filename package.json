@@ -1,6 +1,6 @@
 {
   "name": "@endiagram/mcp",
-  "version": "0.2.26",
+  "version": "0.2.27",
   "description": "MCP server for EN Diagram — deterministic structural analysis backed by named theorems",
   "type": "module",
   "main": "dist/index.js",
