@@ -4,7 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -13,6 +13,27 @@ const toolsConfig = JSON.parse(
 );
 
 const EN_API_URL = process.env.EN_API_URL ?? "https://api.endiagram.com";
+
+/**
+ * Resolve the `source` parameter: if it looks like a file path (.en, .txt,
+ * or starts with / or ~), read the file and return its contents.
+ * Otherwise return the string as-is (inline source).
+ */
+function resolveSource(source: string): string {
+  const trimmed = source.trim();
+  const isPath =
+    trimmed.endsWith(".en") ||
+    trimmed.endsWith(".txt") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("~") ||
+    trimmed.startsWith("./") ||
+    trimmed.startsWith("../");
+  if (!isPath) return source;
+  const resolved = trimmed.startsWith("~")
+    ? join(process.env.HOME ?? "", trimmed.slice(1))
+    : resolve(trimmed);
+  return readFileSync(resolved, "utf-8");
+}
 
 async function callApi(
   toolName: string,
@@ -99,6 +120,16 @@ for (const tool of toolsConfig.tools as ToolDef[]) {
     tool.description,
     schemaProps,
     async (args: Record<string, string | undefined>) => {
+      // Resolve source fields from file paths if needed
+      try {
+        if (args.source) args.source = resolveSource(args.source);
+        if (args.source_a) args.source_a = resolveSource(args.source_a);
+        if (args.source_b) args.source_b = resolveSource(args.source_b);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        return { content: [{ type: "text" as const, text: `Failed to read source file: ${msg}` }], isError: true };
+      }
+
       // Special handling for render (save SVG to file)
       if (tool.name === "render") {
         const result = await callApi("render", args);

@@ -5,7 +5,7 @@
       "name": "structure",
       "description": "What is this system? Complete structural overview: shape (topology), stages with roles, bridge nodes, cycles, parallelism, critical path, dominator tree, min-cuts, subsystems, interface nodes. Includes actors (who does what, workload entropy) and locations (where work happens, boundary crossings). Optional: pass node for per-node centrality, detect_findings for structural pattern detection.",
       "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true},
+        {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
         {"name": "node", "type": "string", "description": "Node name for centrality query", "required": false},
         {"name": "detect_findings", "type": "string", "description": "Set to 'true' to detect structural findings", "required": false}
       ]
@@ -14,7 +14,7 @@
       "name": "invariant",
       "description": "What's always true? conservationLaws are weighted entity sums constant across all executions. sustainableCycles are action sequences that return the system to its starting state (T-invariants). depletableSets are entity groups where simultaneous depletion is irreversible. behavioral.deficiency 0 means structure fully determines dynamics. behavioral.isReversible and behavioral.hasUniqueEquilibrium describe convergence properties.",
       "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true},
+        {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
         {"name": "rules", "type": "string", "description": "Structural rules to check, one per line", "required": false}
       ]
     },
@@ -22,7 +22,7 @@
       "name": "live",
       "description": "Can it deadlock? Can entities overflow? isStructurallyLive means every siphon contains a trap — no structural deadlock possible. uncoveredSiphons are entity groups that can drain permanently, with the actors and locations affected. isStructurallyBounded means no entity can accumulate without limit. unboundedCycles are action sequences that could cause overflow.",
       "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true}
+        {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true}
       ]
     },
     {
@@ -39,8 +39,8 @@
       "name": "equivalent",
       "description": "Are two systems the same? Compare mode (source_a + source_b): shows structural differences, edit distance, and spectral equivalence — isCospectral true means identical structure despite different names. Evolve mode (source + patch): dry-run a change, shows diff plus new/lost bridge nodes. Prefix action name with - in patch to remove it.",
       "parameters": [
-        {"name": "source_a", "type": "string", "description": "EN source code for the first system", "required": false},
-        {"name": "source_b", "type": "string", "description": "EN source code for the second system", "required": false},
+        {"name": "source_a", "type": "string", "description": "EN source code or path to .en/.txt file for the first system", "required": false},
+        {"name": "source_b", "type": "string", "description": "EN source code or path to .en/.txt file for the second system", "required": false},
         {"name": "source", "type": "string", "description": "EN source code for evolve mode", "required": false},
         {"name": "patch", "type": "string", "description": "EN patch for evolve mode", "required": false}
       ]
@@ -49,8 +49,8 @@
       "name": "compose",
       "description": "How do parts combine? Merge mode (source_a + source_b + links): merge two systems by linking shared entities. Extract mode (source + subsystem): extract a subsystem as standalone EN with boundary inputs/outputs, actors, and locations.",
       "parameters": [
-        {"name": "source_a", "type": "string", "description": "EN source code for the first system", "required": false},
-        {"name": "source_b", "type": "string", "description": "EN source code for the second system", "required": false},
+        {"name": "source_a", "type": "string", "description": "EN source code or path to .en/.txt file for the first system", "required": false},
+        {"name": "source_b", "type": "string", "description": "EN source code or path to .en/.txt file for the second system", "required": false},
         {"name": "links", "type": "string", "description": "Entity links e.g. 'a.node1=b.node2'", "required": false},
         {"name": "source", "type": "string", "description": "EN source code for extract mode", "required": false},
         {"name": "subsystem", "type": "string", "description": "Subsystem name for extract mode", "required": false}
@@ -60,7 +60,7 @@
       "name": "render",
       "description": "SVG diagram. Only call when user explicitly asks to visualize.",
       "parameters": [
-        {"name": "source", "type": "string", "description": "EN source code describing the system", "required": true},
+        {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
         {"name": "theme", "type": "string", "description": "Color theme: dark or light", "required": false},
         {"name": "quality", "type": "string", "description": "Output quality: small, mid, or max", "required": false},
         {"name": "view", "type": "string", "description": "View mode: flow (default), actors (swimlane by actor), locations (grouped by context), summary (one node per subsystem)", "required": false},
