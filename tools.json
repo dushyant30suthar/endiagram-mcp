@@ -63,7 +63,7 @@
         {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
         {"name": "theme", "type": "string", "description": "Color theme: dark or light", "required": false},
         {"name": "quality", "type": "string", "description": "Output quality: small, mid, or max", "required": false},
-        {"name": "view", "type": "string", "description": "View mode: flow (default), actors (swimlane by actor), locations (grouped by context), summary (one node per subsystem)", "required": false},
+        {"name": "view", "type": "string", "description": "Group by: actors (partition by actor) or locations (partition by location). Default auto-detects topology.", "required": false},
         {"name": "structure_layers", "type": "string", "description": "Bitmask for structure overlays. Bits: 1=subsystems, 2=pipelines, 4=cycles, 8=forks, 16=joins, 32=hubs. Default 63 (all on). Pass 0 to hide all.", "required": false},
         {"name": "output", "type": "string", "description": "File path to save the SVG", "required": false}
       ]
