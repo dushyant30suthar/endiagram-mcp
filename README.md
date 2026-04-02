@@ -78,19 +78,13 @@ smithery mcp add dushyant30suthar/endiagram
 
 | Tool | Description |
 |------|-------------|
-| `analyze` | System overview: shape, node roles, single points of failure, failure threshold, flow hotspots |
-| `detail` | Concurrency, critical path, flow landmarks, resilience, dependency chains, dominator tree |
-| `categorize` | Auto-discover subsystem boundaries from dependency structure |
-| `distance` | Structural distance between two nodes with the path between them |
-| `diff` | Compare two systems — what changed structurally |
-| `trace` | Follow directed flow from A to B, optional defense node coverage check |
-| `between` | How much of the system flows through a specific node |
-| `extract` | Extract a subsystem as standalone EN source |
-| `impact` | What changes if a node is removed, includes propagation |
-| `evolve` | Dry-run a structural change before making it |
-| `compose` | Merge two systems into one by linking shared entities |
-| `conserve` | Structural invariants, deadlock analysis, complexity, resilience |
-| `render` | SVG diagram |
+| `structure` | Topology, bridges, bottlenecks, parallelism, critical path, dominator tree, subsystems |
+| `invariant` | Conservation laws, deadlock detection, boundedness, structural complexity |
+| `live` | Liveness analysis — can resources drain permanently? Can queues overflow? |
+| `reachable` | Path tracing between any two points — distance, intermediaries, defense coverage |
+| `equivalent` | Compare two systems or simulate a change — what breaks, what shifts |
+| `compose` | Extract or merge subsystems — interface boundaries, shared resources |
+| `render` | SVG diagram of the system |
 
 ## EN Syntax
 
