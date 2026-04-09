@@ -104,6 +104,37 @@ waiter do: deliver needs: meal yields: served customer
 
 Learn more at [endiagram.com](https://endiagram.com).
 
+## Telemetry
+
+`@endiagram/mcp` generates a random install ID on first run, stored at
+`~/.endiagram/install-id` (mode `0600`). It is sent with every request as
+the `X-Endiagram-Install-Id` HTTP header so we can correlate requests
+from the same install for debugging issues that the per-IP signal alone
+cannot track (mobile networks, VPNs, CGNAT all collapse or churn IPs).
+
+**No source code, no file paths, no environment variables, and no PII
+are sent.** The install ID is a random opaque UUIDv4 generated locally.
+
+A first-run notice prints to **stderr** (never stdout — stdout is the
+MCP JSON-RPC channel) with the disclosure and the opt-out instructions.
+The notice fires once per install and never again.
+
+### Opting out
+
+Any of these three methods disables the install ID:
+
+1. Set `ENDIAGRAM_TELEMETRY=off` as an environment variable (also
+   accepts `0`, `false`, `no`).
+2. Create a file at `~/.endiagram/telemetry` containing the word `off`.
+3. Delete `~/.endiagram/install-id`. (A new one is generated on next
+   run unless option 1 or 2 is also set.)
+
+When any of these is active, the `X-Endiagram-Install-Id` header is not
+sent at all — the server falls back to its per-IP HMAC `cid` for
+correlation, which works fine for short-term per-session tracing.
+
+Full privacy policy: [endiagram.com/privacy](https://endiagram.com/privacy)
+
 ## License
 
 MIT
