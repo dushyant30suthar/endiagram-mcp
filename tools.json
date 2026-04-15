@@ -1,9 +1,9 @@
 {
-  "instructions": "EN Diagram is a structural verification engine for concurrent systems. No AI inside.\n\nTo describe a system, write one statement per line:\n  actor do: action needs: input1, input2 yields: output1, output2 at: context\n\nEvery statement requires: actor, do:, needs:, and yields:. Shared names between yields and needs create connections automatically. Multi-word names work fine. Use commas to separate multiple inputs or outputs. at: scopes the action to a context (service, team, region, domain, layer — whatever boundary fits the system).\n\nMultiple actors can share the same action: actor1, actor2 do: action needs: X yields: Y. Two separate statements with the same action, needs, yields, and location are automatically merged into one shared action.\n\nSix tools answer six questions from concurrency theory. Each answer includes who (actors) and where (locations) alongside the structural findings.\n\n1. structure — what is this system?\n2. invariant — what's always true?\n3. live — can it deadlock? can entities overflow?\n4. reachable — can X reach Y?\n5. equivalent — are two systems the same?\n6. compose — how do parts combine?\n\nEvery tool output contains node names, values, and structural properties that can be fed directly into other tools. Read the output. Find the surprising node, the unexpected value, the structural anomaly. Then pick the tool that investigates THAT specific finding.\n\nDo not stop at one tool call. The first call reveals the structure — the real insight comes from the second, third, fourth call that digs into what the first one found.\n\nSpeak in the user's domain, not in graph theory. Only call render when the user explicitly asks to visualize.",
+  "instructions": "EN Diagram is a structural verification engine for concurrent systems. No AI inside.\n\n## Language syntax\n\nOne statement per line:\n  actor do: action needs: input1, input2 yields: output1, output2 at: context\n\nEvery statement requires: actor, do:, needs:, and yields:. at: scopes the action to a context (service, team, region, domain, layer — whatever boundary fits the system).\n\n**Names can contain spaces.** Unquoted identifiers can span multiple words, so `duo initiator do: create DuoSession needs: session factory yields: active session` is valid. Commas separate list items; whitespace inside a name is preserved. Wrap a name in double quotes only when it must contain a comma, colon, or `#` character.\n\n**Shared names create connections.** When one action's `yields:` name matches another action's `needs:` name, the two actions connect automatically. No explicit wiring — string equality is the link.\n\n**Multiple actors on one action.** Comma-separate subjects to express that several actors perform the same action together:\n  actor1, actor2 do: action needs: X yields: Y\nThis is a single action performed jointly, not two separate actions. Two independent statements with the same action name, needs, yields, AND at: location are automatically merged into one shared action.\n\n**Comments.** Lines starting with `#` are ignored. Blank lines are ignored.\n\n## Tools\n\nSix tools answer six questions from concurrency theory. Each answer includes who (actors) and where (locations) alongside the structural findings.\n\n1. structure — what is this system?\n2. invariant — what's always true?\n3. live — can it deadlock? can entities overflow?\n4. reachable — can X reach Y?\n5. equivalent — are two systems the same?\n6. compose — how do parts combine?\n\nEvery tool output contains node names, values, and structural properties that can be fed directly into other tools. Read the output. Find the surprising node, the unexpected value, the structural anomaly. Then pick the tool that investigates THAT specific finding.\n\nDo not stop at one tool call. The first call reveals the structure — the real insight comes from the second, third, fourth call that digs into what the first one found.\n\nSpeak in the user's domain, not in graph theory. Only call render when the user explicitly asks to visualize.",
   "tools": [
     {
       "name": "structure",
-      "description": "What is this system? Complete structural overview: shape (topology), stages with roles, bridge nodes, cycles, parallelism, critical path, dominator tree, min-cuts, subsystems, interface nodes. Includes actors (who does what, workload entropy) and locations (where work happens, boundary crossings). Optional: pass node for per-node centrality, detect_findings for structural pattern detection.",
+      "description": "What is this system? Complete structural overview: shape (topology), stages with roles, bridge nodes, cycles, parallelism, critical path, dominator tree, min-cuts, subsystems, interface nodes. Includes actors (who does what, workload entropy) and locations (where work happens, boundary crossings). Optional: pass node for per-node centrality, detect_findings for structural pattern detection. See the server instructions for EN language syntax (spaces in names, # comments, shared actions).",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
         {"name": "node", "type": "string", "description": "Node name for centrality query", "required": false},
@@ -12,7 +12,7 @@
     },
     {
       "name": "invariant",
-      "description": "What's always true? conservationLaws are weighted entity sums constant across all executions. sustainableCycles are action sequences that return the system to its starting state (T-invariants). depletableSets are entity groups where simultaneous depletion is irreversible. behavioral.deficiency 0 means structure fully determines dynamics. behavioral.isReversible and behavioral.hasUniqueEquilibrium describe convergence properties.",
+      "description": "What's always true? conservationLaws are weighted entity sums constant across all executions. sustainableCycles are action sequences that return the system to its starting state (T-invariants). depletableSets are entity groups where simultaneous depletion is irreversible. behavioral.deficiency 0 means structure fully determines dynamics. behavioral.isReversible and behavioral.hasUniqueEquilibrium describe convergence properties. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
         {"name": "rules", "type": "string", "description": "Structural rules to check, one per line", "required": false}
@@ -20,14 +20,14 @@
     },
     {
       "name": "live",
-      "description": "Can it deadlock? Can entities overflow? isStructurallyLive means every siphon contains a trap — no structural deadlock possible. uncoveredSiphons are entity groups that can drain permanently, with the actors and locations affected. isStructurallyBounded means no entity can accumulate without limit. unboundedCycles are action sequences that could cause overflow.",
+      "description": "Can it deadlock? Can entities overflow? isStructurallyLive means every siphon contains a trap — no structural deadlock possible. uncoveredSiphons are entity groups that can drain permanently, with the actors and locations affected. isStructurallyBounded means no entity can accumulate without limit. unboundedCycles are action sequences that could cause overflow. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true}
       ]
     },
     {
       "name": "reachable",
-      "description": "Can X reach Y? Follows directed data flow first; falls back to undirected. Path shows each step with actor and location. locationCrossings counts boundary transitions. defense_nodes checks if guards cover all paths. coverage.fullCoverage false means unguarded routes exist.",
+      "description": "Can X reach Y? Follows directed data flow first; falls back to undirected. Path shows each step with actor and location. locationCrossings counts boundary transitions. defense_nodes checks if guards cover all paths. coverage.fullCoverage false means unguarded routes exist. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code", "required": true},
         {"name": "from", "type": "string", "description": "Starting node name", "required": true},
@@ -37,7 +37,7 @@
     },
     {
       "name": "equivalent",
-      "description": "Are two systems the same? Compare mode (source_a + source_b): shows structural differences, edit distance, and spectral equivalence — isCospectral true means identical structure despite different names. Evolve mode (source + patch): dry-run a change, shows diff plus new/lost bridge nodes. Prefix action name with - in patch to remove it.",
+      "description": "Are two systems the same? Compare mode (source_a + source_b): shows structural differences, edit distance, and spectral equivalence — isCospectral true means identical structure despite different names. Evolve mode (source + patch): dry-run a change, shows diff plus new/lost bridge nodes. Prefix action name with - in patch to remove it. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source_a", "type": "string", "description": "EN source code or path to .en/.txt file for the first system", "required": false},
         {"name": "source_b", "type": "string", "description": "EN source code or path to .en/.txt file for the second system", "required": false},
@@ -47,7 +47,7 @@
     },
     {
       "name": "compose",
-      "description": "How do parts combine? Merge mode (source_a + source_b + links): merge two systems by linking shared entities. Extract mode (source + subsystem): extract a subsystem as standalone EN with boundary inputs/outputs, actors, and locations.",
+      "description": "How do parts combine? Merge mode (source_a + source_b + links): merge two systems by linking shared entities. Extract mode (source + subsystem): extract a subsystem as standalone EN with boundary inputs/outputs, actors, and locations. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source_a", "type": "string", "description": "EN source code or path to .en/.txt file for the first system", "required": false},
         {"name": "source_b", "type": "string", "description": "EN source code or path to .en/.txt file for the second system", "required": false},
@@ -58,15 +58,18 @@
     },
     {
       "name": "render",
-      "description": "SVG diagram. Only call when user explicitly asks to visualize.",
+      "description": "SVG or PNG diagram. Only call when user explicitly asks to visualize. The rendered image is delivered to the user, not injected into the model's context. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
-        {"name": "theme", "type": "string", "description": "Color theme: dark or light", "required": false},
+        {"name": "theme", "type": "string", "description": "Color theme: named preset (Blueprint, Swiss, etc.) or dark/light", "required": false},
+        {"name": "isDark", "type": "string", "description": "true or false. Selects the dark or light variant of a named preset. If omitted, defaults to dark unless theme=light.", "required": false},
+        {"name": "type", "type": "string", "description": "Output format: svg (default) or png. PNG is rasterized server-side via Batik.", "required": false},
         {"name": "quality", "type": "string", "description": "Output quality: small, mid, or max", "required": false},
         {"name": "view", "type": "string", "description": "Group by: actors (partition by actor) or locations (partition by location). Default auto-detects topology.", "required": false},
-        {"name": "structure_layers", "type": "string", "description": "Bitmask for structure overlays. Bits: 1=subsystems, 2=pipelines, 4=cycles, 8=forks, 16=joins, 32=hubs. Default 63 (all on). Pass 0 to hide all.", "required": false},
+        {"name": "structure_layers", "type": "string", "description": "Bitmask for structure overlays. Bits: 1=subsystems, 2=pipelines, 4=cycles, 8=forks, 16=joins, 32=hubs, 64=deadlock, 128=overflow. Default 255 (all on). Pass 0 to hide all.", "required": false},
         {"name": "color", "type": "string", "description": "Seed color hex (#RRGGBB) to generate a custom theme. Overrides theme parameter. One color generates the entire palette.", "required": false},
-        {"name": "output", "type": "string", "description": "File path to save the SVG", "required": false}
+        {"name": "direction", "type": "string", "description": "Layout direction: LR (left-to-right) or TB (top-to-bottom). Default auto-detects from condensation DAG aspect ratio.", "required": false},
+        {"name": "output", "type": "string", "description": "File path to save the rendered image", "required": false}
       ]
     }
   ]

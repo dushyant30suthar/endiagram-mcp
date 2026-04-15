@@ -128,7 +128,7 @@ function resolveSource(source: string): string {
 async function callApi(
   toolName: string,
   args: Record<string, unknown>
-): Promise<{ text: string; isError: boolean; svg?: string; data?: unknown }> {
+): Promise<{ text: string; isError: boolean; svg?: string; pngBase64?: string; data?: unknown }> {
   try {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -165,12 +165,17 @@ async function callApi(
       const content = result?.content?.[0];
       const text = content?.text ?? body;
       const isError = result?.isError ?? false;
-      // Check for SVG in second content block (render tool)
-      const svgContent = result?.content?.[1];
-      const svg = svgContent?.text?.startsWith("<svg")
-        ? svgContent.text
+      // Check for rendered content in second content block (render tool).
+      // SVG: text block whose text starts with "<svg".
+      // PNG: image block with base64 data + mimeType "image/png".
+      const renderContent = result?.content?.[1];
+      const svg = renderContent?.text?.startsWith("<svg")
+        ? renderContent.text
         : undefined;
-      return { text, isError, svg, data: undefined };
+      const pngBase64 = renderContent?.type === "image" && renderContent?.mimeType === "image/png"
+        ? renderContent.data as string
+        : undefined;
+      return { text, isError, svg, pngBase64, data: undefined };
     } catch {
       return { text: body, isError: false };
     }
@@ -227,32 +232,46 @@ for (const tool of toolsConfig.tools as ToolDef[]) {
         return { content: [{ type: "text" as const, text: `Failed to read source file: ${msg}` }], isError: true };
       }
 
-      // Special handling for render (save SVG to file)
+      // Special handling for render — save SVG or PNG to file.
+      // The rendered image is for the user's eyes (audience:user), never
+      // injected into the model's context. We save to disk and return the
+      // file path as a text content block.
       if (tool.name === "render") {
         const result = await callApi("render", args);
-        if (result.isError || !result.svg) {
+        const isPng = !!result.pngBase64;
+        const hasContent = isPng || !!result.svg;
+        if (result.isError || !hasContent) {
           return {
             content: [{ type: "text" as const, text: result.text }],
             isError: result.isError,
           };
         }
 
-        const outputPath = args.output;
+        const outputPath = args.output as string | undefined;
+        const ext = isPng ? ".png" : ".svg";
         let filePath: string;
         if (outputPath) {
-          const dir = dirname(outputPath);
+          // If the user gave a path, respect it but fix the extension.
+          const base = outputPath.replace(/\.(svg|png)$/i, "");
+          filePath = base + ext;
+          const dir = dirname(filePath);
           if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-          filePath = outputPath;
         } else {
           const outDir = join(process.cwd(), ".endiagram");
           if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
-          filePath = join(outDir, `en-${Date.now()}.svg`);
+          filePath = join(outDir, `en-${Date.now()}${ext}`);
         }
-        writeFileSync(filePath, result.svg);
 
+        if (isPng) {
+          writeFileSync(filePath, Buffer.from(result.pngBase64!, "base64"));
+        } else {
+          writeFileSync(filePath, result.svg!);
+        }
+
+        const label = isPng ? "PNG" : "SVG";
         return {
           content: [
-            { type: "text" as const, text: `SVG saved: ${filePath}` },
+            { type: "text" as const, text: `${label} saved: ${filePath}` },
           ],
           isError: false,
         };
