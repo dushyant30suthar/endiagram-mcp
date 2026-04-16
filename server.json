@@ -6,12 +6,12 @@
     "url": "https://github.com/dushyant30suthar/endiagram-mcp",
     "source": "github"
   },
-  "version": "0.3.1",
+  "version": "0.3.2",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@endiagram/mcp",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "transport": {
         "type": "stdio"
       }
