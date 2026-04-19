@@ -1,7 +1,7 @@
 {
   "name": "@endiagram/mcp",
-  "version": "0.3.4",
-  "description": "MCP server for EN Diagram — deterministic structural analysis backed by named theorems",
+  "version": "0.3.5",
+  "description": "MCP server for EN Diagram — six questions about any system (structure, invariants, liveness, reachability, equivalence, composition) answered with graph theory. Plus a render tool. Pure math, no AI inside the computation.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

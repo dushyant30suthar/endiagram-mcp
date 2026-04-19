@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.dushyant30suthar/endiagram-mcp",
-  "description": "13 deterministic graph tools for structural analysis. No AI inside the computation.",
+  "description": "7 tools for graph-theoretic structural analysis across any system — topology, invariants, deadlock detection, reachability, spectral equivalence, composition, rendering. Pure math, no AI inside the computation.",
   "repository": {
     "url": "https://github.com/dushyant30suthar/endiagram-mcp",
     "source": "github"
   },
-  "version": "0.3.4",
+  "version": "0.3.5",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@endiagram/mcp",
-      "version": "0.3.4",
+      "version": "0.3.5",
       "transport": {
         "type": "stdio"
       }

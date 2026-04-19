@@ -1,21 +1,21 @@
 {
-  "instructions": "EN Diagram — structural verification for concurrent systems. Pure math, no AI.\n\n## Syntax\nOne statement per line:\n  actor do: action needs: input1, input2 yields: output1, output2 at: context\n\n- All five parts required.\n- Names span words; whitespace preserved. Quote only if name contains `,`, `:`, or `#`.\n- Shared names = connections: one action's `yields:` matching another's `needs:` wires them automatically. String equality is the link.\n- Multi-actor: `a, b do: action needs: X yields: Y` = one joint action. Identical statements merge.\n- `#` starts a comment.\n\n## Tools (six questions)\n1. structure — what is this system?\n2. invariant — what's always true?\n3. live — can it deadlock or overflow?\n4. reachable — can X reach Y?\n5. equivalent — are two systems the same?\n6. compose — how do parts combine?\n\n## How to use them\nEvery tool output contains node names, values, and structural properties that can be fed directly into other tools. Read the output. Find the surprising node, the unexpected value, the structural anomaly. Then pick the tool that investigates THAT specific finding.\n\nDo not stop at one tool call. The first call reveals the structure — the real insight comes from the second, third, fourth call that digs into what the first one found.\n\nSpeak in the user's domain, not in graph theory. Only call render when the user explicitly asks to visualize.",
+  "instructions": "EN Diagram — structural verification for concurrent systems. Pure math, no AI.\n\n## Syntax\nOne statement per line:\n  actor do: action needs: input1, input2 yields: output1, output2 at: context\n\n- All five parts required.\n- Names span words; whitespace preserved. Quote only if name contains `,`, `:`, or `#`.\n- Shared names = connections: one action's `yields:` matching another's `needs:` wires them automatically. String equality is the link.\n- Multi-actor: `a, b do: action needs: X yields: Y` = one joint action. Identical statements merge.\n- `#` starts a comment.\n\n## Tools (six questions + levers)\n1. structure — what is this system? detect_findings=true flags unguarded-sink, single-cut-path, multi-cut-path. node=X returns per-node centrality.\n2. invariant — what's always true? rules (one per line) check custom claims; 4 shapes: `no bridge that is also hub` | `every path from X to Y passes through at least one of [A,B,C]` (precedence) | `no node with centrality above N` | `removing any single node disconnects at most N others`.\n3. live — can it deadlock or overflow?\n4. reachable — can X reach Y? defense_nodes=a,b,c checks guard coverage.\n5. equivalent — are two systems the same? compare: source_a+source_b. evolve: source+patch (plain EN adds, `- name` removes, same-name replaces).\n6. compose — how do parts combine? merge: source_a+source_b+links (`a.entity=b.entity` per line). extract: source+subsystem (names from structure.subsystems).\n\n## How to use them\nEvery tool output contains node names, values, and structural properties that can be fed directly into other tools. Read the output. Find the surprising node, the unexpected value, the structural anomaly. Then pick the tool that investigates THAT specific finding.\n\nDo not stop at one tool call. The first call reveals the structure — the real insight comes from the second, third, fourth call that digs into what the first one found.\n\nSpeak in the user's domain, not in graph theory. Only call render when the user explicitly asks to visualize.",
   "tools": [
     {
       "name": "structure",
-      "description": "What is this system? Complete structural overview: shape (topology), stages with roles, bridge nodes, cycles, parallelism, critical path, dominator tree, min-cuts, subsystems, interface nodes. Includes actors (who does what, workload entropy) and locations (where work happens, boundary crossings). Optional: pass node for per-node centrality, detect_findings for structural pattern detection. See the server instructions for EN language syntax (spaces in names, # comments, shared actions).",
+      "description": "What is this system? Returns shape (Pipeline, Fork-Join, DAG, Star, Cycle, Tree, Complete, etc.), stages with roles, bridge nodes, cycles, parallelism, critical path, dominator tree, min-cuts, subsystems, interface nodes, actors (who does what, workload entropy), locations (where work happens, boundary crossings). Levers: node=X returns per-node centrality (betweenness, closeness, eigenvector) for a specific node. detect_findings=true flags named structural risks — unguarded-sink (sinks reachable via only pipeline actions, no JOIN/HUB gating), single-cut-path (source-sink pairs with only one vertex-disjoint path), multi-cut-path (paths with redundant defense, min-cut > 1). See server instructions for EN language syntax.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
-        {"name": "node", "type": "string", "description": "Node name for centrality query", "required": false},
-        {"name": "detect_findings", "type": "string", "description": "Set to 'true' to detect structural findings", "required": false}
+        {"name": "node", "type": "string", "description": "Node name. When provided, returns per-node centrality (betweenness, closeness, eigenvector) for this specific node instead of the overview.", "required": false},
+        {"name": "detect_findings", "type": "string", "description": "Set to 'true' to flag named structural findings. Possible values: unguarded-sink, single-cut-path, multi-cut-path.", "required": false}
       ]
     },
     {
       "name": "invariant",
-      "description": "What's always true? conservationLaws are weighted entity sums constant across all executions. sustainableCycles are action sequences that return the system to its starting state (T-invariants). depletableSets are entity groups where simultaneous depletion is irreversible. behavioral.deficiency 0 means structure fully determines dynamics. behavioral.isReversible and behavioral.hasUniqueEquilibrium describe convergence properties. See the server instructions for EN language syntax.",
+      "description": "What's always true — automatic findings and on-demand checks. Automatic outputs: conservationLaws (weighted entity sums constant across executions), sustainableCycles (T-invariants — action sequences returning to start state), depletableSets (entity groups whose simultaneous depletion is irreversible), behavioral.deficiency (0 means structure fully determines dynamics), behavioral.isReversible, behavioral.hasUniqueEquilibrium. On-demand via `rules`: encode domain-specific claims and verify them against the graph — this is how to check things the topology alone can't see (precedence, coverage, centrality bounds, resilience). See the rules parameter for supported sentence shapes.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
-        {"name": "rules", "type": "string", "description": "Structural rules to check, one per line", "required": false}
+        {"name": "rules", "type": "string", "description": "Custom structural rules, one per line. Four supported sentence shapes (regex-matched): (1) `no bridge that is also hub` — flags nodes that are both a bridge and a hub. (2) `every path from X to Y passes through at least one of [A, B, C]` — encodes precedence/coverage; use to check `A must happen before Y produces Z` by rewriting as `every path from Z's input to Z passes through [A]`. (3) `no node with centrality above 0.5` — flags over-central nodes (replace 0.5 with any threshold). (4) `removing any single node disconnects at most N others` — connectivity robustness check. Unrecognized rules return satisfied:false with an explanation listing these shapes.", "required": false}
       ]
     },
     {
@@ -27,7 +27,7 @@
     },
     {
       "name": "reachable",
-      "description": "Can X reach Y? Follows directed data flow first; falls back to undirected. Path shows each step with actor and location. locationCrossings counts boundary transitions. defense_nodes checks if guards cover all paths. coverage.fullCoverage false means unguarded routes exist. See the server instructions for EN language syntax.",
+      "description": "Can X reach Y? Follows directed data flow first; falls back to undirected. `from` and `to` accept entity names or action names (resolved against the program). Path shows each step with actor and location. locationCrossings counts boundary transitions. defense_nodes checks if guards cover all paths; coverage.fullCoverage=false means unguarded routes exist. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code", "required": true},
         {"name": "from", "type": "string", "description": "Starting node name", "required": true},
@@ -37,23 +37,23 @@
     },
     {
       "name": "equivalent",
-      "description": "Are two systems the same? Compare mode (source_a + source_b): shows structural differences, edit distance, and spectral equivalence — isCospectral true means identical structure despite different names. Evolve mode (source + patch): dry-run a change, shows diff plus new/lost bridge nodes. Prefix action name with - in patch to remove it. See the server instructions for EN language syntax.",
+      "description": "Are two systems the same, or what changes if I change this one? Compare mode (source_a + source_b): structural differences, edit distance, spectral equivalence. isCospectral=true means identical graph structure up to relabeling — topologically the same despite different names, actors, or locations. Evolve mode (source + patch): dry-run a change, shows diff plus new/lost bridge nodes. Patch has three directive types — plain EN statement adds an action; a line starting with `-` (and not containing `do:`) removes the named action; a statement whose action name matches an existing one replaces the original. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source_a", "type": "string", "description": "EN source code or path to .en/.txt file for the first system", "required": false},
         {"name": "source_b", "type": "string", "description": "EN source code or path to .en/.txt file for the second system", "required": false},
         {"name": "source", "type": "string", "description": "EN source code for evolve mode", "required": false},
-        {"name": "patch", "type": "string", "description": "EN patch for evolve mode", "required": false}
+        {"name": "patch", "type": "string", "description": "EN patch for evolve mode. Three directive types: plain EN statement (`actor do: X needs: Y yields: Z at: W`) adds action X; a line starting with `-` (and not containing `do:`) removes the named action; a new statement with an existing action name replaces the original. Multiple directives allowed, one per line.", "required": false}
       ]
     },
     {
       "name": "compose",
-      "description": "How do parts combine? Merge mode (source_a + source_b + links): merge two systems by linking shared entities. Extract mode (source + subsystem): extract a subsystem as standalone EN with boundary inputs/outputs, actors, and locations. See the server instructions for EN language syntax.",
+      "description": "How do parts combine, or how does a part stand alone? Merge mode (source_a + source_b + links): declare which entities in A are the same as entities in B; the combined graph is wired via string-equality of shared names. Extract mode (source + subsystem): pull a named subsystem out as standalone EN with boundary inputs/outputs, actors, and locations. Valid subsystem names come from structure's `subsystems` field — call structure on the source first to discover them. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source_a", "type": "string", "description": "EN source code or path to .en/.txt file for the first system", "required": false},
         {"name": "source_b", "type": "string", "description": "EN source code or path to .en/.txt file for the second system", "required": false},
-        {"name": "links", "type": "string", "description": "Entity links e.g. 'a.node1=b.node2'", "required": false},
+        {"name": "links", "type": "string", "description": "Entity identifications, one per line. Format: `a.<entity name>=b.<entity name>` (A's entity is the same as B's entity). `#` starts a comment. Example: `a.user session=b.authenticated session`.", "required": false},
         {"name": "source", "type": "string", "description": "EN source code for extract mode", "required": false},
-        {"name": "subsystem", "type": "string", "description": "Subsystem name for extract mode", "required": false}
+        {"name": "subsystem", "type": "string", "description": "Subsystem name to extract. Valid names come from structure's `subsystems` field — call structure on the source first to discover them.", "required": false}
       ]
     },
     {
@@ -61,7 +61,7 @@
       "description": "SVG or PNG diagram. Only call when user explicitly asks to visualize. The rendered image is delivered to the user, not injected into the model's context. See the server instructions for EN language syntax.",
       "parameters": [
         {"name": "source", "type": "string", "description": "EN source code, or path to .en/.txt file", "required": true},
-        {"name": "theme", "type": "string", "description": "Color theme: named preset (Blueprint, Swiss, etc.) or dark/light", "required": false},
+        {"name": "theme", "type": "string", "description": "Color theme. Named presets (curated, each with light + dark variants; pair with isDark): Blueprint (architectural drafting paper), Swiss (International Typographic — black/white with red accent), Bauhaus (primary-color geometric), Brutalist (high-contrast stark). Seed-derived (auto-generated palettes from themes.json): Nord, Catppuccin, etc. Or pass 'dark'/'light' for the default theme in that mode. Overridden by `color` if provided.", "required": false},
         {"name": "isDark", "type": "string", "description": "true or false. Selects the dark or light variant of a named preset. If omitted, defaults to dark unless theme=light.", "required": false},
         {"name": "type", "type": "string", "description": "Output format: png (default) or svg. PNG is rasterized server-side via Batik.", "required": false},
         {"name": "quality", "type": "string", "description": "Output quality: small, mid, or max", "required": false},

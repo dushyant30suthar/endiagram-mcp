@@ -76,15 +76,17 @@ smithery mcp add dushyant30suthar/endiagram
 
 ## Tools
 
-| Tool | Description |
-|------|-------------|
-| `structure` | Topology, bridges, bottlenecks, parallelism, critical path, dominator tree, subsystems |
-| `invariant` | Conservation laws, deadlock detection, boundedness, structural complexity |
-| `live` | Liveness analysis — can resources drain permanently? Can queues overflow? |
-| `reachable` | Path tracing between any two points — distance, intermediaries, defense coverage |
-| `equivalent` | Compare two systems or simulate a change — what breaks, what shifts |
-| `compose` | Extract or merge subsystems — interface boundaries, shared resources |
-| `render` | SVG diagram of the system |
+Six questions about any system, plus a render tool. Every tool takes `source` (EN code or `.en`/`.txt` file path).
+
+| Tool | What it answers | Levers |
+|------|-----------------|--------|
+| `structure` | What is this system? Shape, stages, bridges, cycles, critical path, dominator tree, min-cuts, subsystems, actors, locations. | `detect_findings=true` flags risks (unguarded-sink, single-cut-path, multi-cut-path); `node=X` returns per-node centrality (betweenness, closeness, eigenvector). |
+| `invariant` | What's always true? Conservation laws, T-invariants (sustainable cycles), depletable sets, deficiency, reversibility. | `rules` (one per line) checks custom claims. Four supported shapes: `no bridge that is also hub` · `every path from X to Y passes through at least one of [A,B,C]` (precedence) · `no node with centrality above N` · `removing any single node disconnects at most N others`. |
+| `live` | Can it deadlock? Can entities overflow? Siphons, traps, unbounded cycles, structural liveness and boundedness. | — |
+| `reachable` | Can X reach Y? Path, distance, boundary crossings. `from`/`to` accept entity or action names. | `defense_nodes=a,b,c` checks whether guards cover every path. |
+| `equivalent` | Are two systems the same, or what changes if I change this one? | Compare mode (`source_a`+`source_b`): edit distance + spectral cospectrality. Evolve mode (`source`+`patch`): plain EN adds; `- name` removes; same-name replaces. |
+| `compose` | How do parts combine (merge) or how does a part stand alone (extract)? | Merge: `source_a`+`source_b`+`links` (`a.entity=b.entity` per line). Extract: `source`+`subsystem` (names come from `structure.subsystems`). |
+| `render` | SVG or PNG diagram. Only call when the user asks to visualize. | Themes: `Blueprint`, `Swiss`, `Bauhaus`, `Brutalist` (each ± `isDark`) or seeded `Nord`, `Catppuccin`. `structure_layers` bitmask (1=subsystems, 2=pipelines, 4=cycles, 8=forks, 16=joins, 32=hubs, 64=deadlock, 128=overflow). `color=#RRGGBB` for a custom palette. |
 
 ## EN Syntax
 
