@@ -104,6 +104,10 @@ kitchen do: prepare food needs: order yields: meal
 waiter do: deliver needs: meal yields: served customer
 ```
 
+## Modeling
+
+Same name = same thing. Put all required inputs in one `needs:` list (AND). Give two actions the same yield-name to offer alternatives (OR). Sequence = one action consuming another's yield. Re-yield stateful resources to keep them persistent; one-shot data stays consumed. Model at the real atomic granularity — split only when the pieces could be accessed independently.
+
 Learn more at [endiagram.com](https://endiagram.com).
 
 ## Telemetry
