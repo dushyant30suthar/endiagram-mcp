@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.dushyant30suthar/endiagram-mcp",
-  "description": "7 tools for graph-theoretic structural analysis across any system — topology, invariants, deadlock detection, reachability, spectral equivalence, composition, rendering. Pure math, no AI inside the computation.",
+  "description": "EN Diagram — structural verification for concurrent systems. Pure math, no AI.",
   "repository": {
     "url": "https://github.com/dushyant30suthar/endiagram-mcp",
     "source": "github"
   },
-  "version": "0.3.7",
+  "version": "0.3.8",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@endiagram/mcp",
-      "version": "0.3.7",
+      "version": "0.3.8",
       "transport": {
         "type": "stdio"
       }
