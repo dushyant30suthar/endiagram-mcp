@@ -76,7 +76,7 @@ smithery mcp add dushyant30suthar/endiagram
 
 ## Tools
 
-Six questions about any system, plus a render tool. Every tool takes `source` (EN code or `.en`/`.txt` file path).
+Six questions about any system, plus a render tool. Every tool takes `source` (EN code or `.en`/`.txt` file path). Tool names are shorthand, not specs — read each description before calling; `compose` and `equivalent` are mode-based, not general analyzers.
 
 | Tool | What it answers | Levers |
 |------|-----------------|--------|
