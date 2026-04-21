@@ -86,7 +86,7 @@ Six questions about any system, plus a render tool. Every tool takes `source` (E
 | `reachable` | Can X reach Y? Path, distance, boundary crossings. `from`/`to` accept entity or action names. | `defense_nodes=a,b,c` checks whether guards cover every path. |
 | `equivalent` | Are two systems the same, or what changes if I change this one? | Compare mode (`source_a`+`source_b`): edit distance + spectral cospectrality. Evolve mode (`source`+`patch`): plain EN adds; `- name` removes; same-name replaces. |
 | `compose` | How do parts combine (merge) or how does a part stand alone (extract)? | Merge: `source_a`+`source_b`+`links` (`a.entity=b.entity` per line). Extract: `source`+`subsystem` (names come from `structure.subsystems`). |
-| `render` | SVG or PNG diagram. Only call when the user asks to visualize. | Themes: `Blueprint`, `Swiss`, `Bauhaus`, `Brutalist` (each ± `isDark`) or seeded `Nord`, `Catppuccin`. `structure_layers` bitmask (1=subsystems, 2=pipelines, 4=cycles, 8=forks, 16=joins, 32=hubs, 64=deadlock, 128=overflow). `color=#RRGGBB` for a custom palette. |
+| `render` | SVG or PNG diagram. Only call when the user asks to visualize. | Themes: `Editorial`, `Primer`, `Carbon` (each ± `isDark`) or seed-derived from `color=#RRGGBB`. `structure_layers` bitmask (1=subsystems, 2=pipelines, 4=cycles, 8=forks, 16=joins, 32=hubs, 64=deadlock, 128=overflow). |
 
 ## EN Syntax
 
